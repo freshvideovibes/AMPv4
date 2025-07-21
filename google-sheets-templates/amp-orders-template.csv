@@ -1,0 +1,4 @@
+ID,Erstellt,Kundenname,Adresse,Telefon,Email,Beschreibung,Priorität,Geschätzter Umsatz,Status,Erstellt von,Zugewiesen an,Zugewiesen am,Zugewiesen von,Notizen,Abgeschlossen am,Tatsächlicher Umsatz
+1001,2024-01-15T10:30:00Z,Max Mustermann,Musterstraße 123 12345 Musterstadt,+49 123 456789,max@beispiel.de,Heizungsreparatur dringend,urgent,150.00,completed,Agent 007,+491234567890,2024-01-15T11:00:00Z,Vergabe Team,Kunde ist sehr freundlich,2024-01-15T15:30:00Z,175.00
+1002,2024-01-15T14:20:00Z,Anna Schmidt,Beispielweg 456 54321 Beispielstadt,+49 987 654321,anna@test.de,Wasserrohr undicht,normal,80.00,assigned,Lisa Weber,+4369912345678,2024-01-15T15:00:00Z,Vergabe Team,Keller - Hauptwasserleitung,,,
+1003,2024-01-16T09:15:00Z,Peter Müller,Teststraße 789 98765 Testdorf,+49 555 123456,peter@mail.de,Elektrik prüfen,low,120.00,pending,Agent 007,,,,Neubau - komplette Elektroinstallation prüfen,,,
