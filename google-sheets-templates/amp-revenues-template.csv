@@ -1,0 +1,4 @@
+ID,Auftrag ID,Monteur ID,Monteur Name,Betrag,Beschreibung,Gemeldet am,Status,Bestätigt von,Bestätigt am,Ablehnungsgrund,Bilder,Kategorie,Arbeitszeit (Stunden),Material Kosten
+2001,1001,+491234567890,Max Mustermann,175.00,Heizungsreparatur abgeschlossen - neue Dichtungen eingebaut,2024-01-15T15:30:00Z,approved,Vergabe Team,2024-01-15T16:00:00Z,,https://example.com/image1.jpg;https://example.com/image2.jpg,Heizung,3.5,45.00
+2002,1002,+4369912345678,Anna Schmidt,95.00,Wasserrohr repariert - Leck abgedichtet,2024-01-16T10:15:00Z,pending,,,,"https://example.com/image3.jpg",Sanitär,2.0,25.00
+2003,1001,+491234567890,Max Mustermann,25.00,Nacharbeiten - zusätzliche Dichtung,2024-01-16T08:30:00Z,rejected,Sarah Müller,2024-01-16T09:00:00Z,Bereits im Hauptauftrag enthalten,,Heizung,0.5,15.00

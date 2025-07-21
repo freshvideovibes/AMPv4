@@ -1,0 +1,498 @@
+{
+  "name": "AMP 2.0 - Haupt Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "amp-api-v2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "amp-webhook-main"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.action}}",
+              "operation": "equal",
+              "value2": "create_order"
+            }
+          ]
+        }
+      },
+      "id": "if-create-order",
+      "name": "Wenn Auftrag erstellen",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.action}}",
+              "operation": "equal",
+              "value2": "report_revenue"
+            }
+          ]
+        }
+      },
+      "id": "if-report-revenue",
+      "name": "Wenn Umsatz melden",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.action}}",
+              "operation": "equal",
+              "value2": "approve_revenue"
+            }
+          ]
+        }
+      },
+      "id": "if-approve-revenue",
+      "name": "Wenn Umsatz bestätigen",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 600]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.action}}",
+              "operation": "equal",
+              "value2": "assign_order"
+            }
+          ]
+        }
+      },
+      "id": "if-assign-order",
+      "name": "Wenn Auftrag zuweisen",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 800]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "serviceAccountEmail": "={{$json.googleSheetsConfig.serviceAccountEmail}}",
+        "operation": "append",
+        "documentId": "={{$json.googleSheetsConfig.ordersSheetId}}",
+        "sheetName": "Aufträge",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{$json.data.id || $now}}",
+            "Erstellt": "={{$json.data.createdAt}}",
+            "Kundenname": "={{$json.data.customerName}}",
+            "Adresse": "={{$json.data.address}}",
+            "Telefon": "={{$json.data.phone}}",
+            "Email": "={{$json.data.email}}",
+            "Beschreibung": "={{$json.data.description}}",
+            "Priorität": "={{$json.data.priority}}",
+            "Geschätzter Umsatz": "={{$json.data.estimatedRevenue}}",
+            "Status": "pending",
+            "Erstellt von": "={{$json.data.createdBy}}",
+            "Zugewiesen an": "",
+            "Zugewiesen am": "",
+            "Abgeschlossen am": ""
+          }
+        },
+        "options": {}
+      },
+      "id": "google-sheets-create-order",
+      "name": "Google Sheets - Auftrag erstellen",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [680, 100]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "serviceAccountEmail": "={{$json.googleSheetsConfig.serviceAccountEmail}}",
+        "operation": "append",
+        "documentId": "={{$json.googleSheetsConfig.revenuesSheetId}}",
+        "sheetName": "Umsätze",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{$json.data.id || $now}}",
+            "Auftrag ID": "={{$json.data.orderId}}",
+            "Monteur ID": "={{$json.data.monteurId}}",
+            "Monteur Name": "={{$json.data.monteurName}}",
+            "Betrag": "={{$json.data.amount}}",
+            "Beschreibung": "={{$json.data.description}}",
+            "Gemeldet am": "={{$json.data.reportedAt}}",
+            "Status": "pending",
+            "Bestätigt von": "",
+            "Bestätigt am": "",
+            "Ablehnungsgrund": "",
+            "Bilder": "={{$json.data.images ? $json.data.images.join(';') : ''}}"
+          }
+        },
+        "options": {}
+      },
+      "id": "google-sheets-report-revenue",
+      "name": "Google Sheets - Umsatz melden",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "serviceAccountEmail": "={{$json.googleSheetsConfig.serviceAccountEmail}}",
+        "operation": "update",
+        "documentId": "={{$json.googleSheetsConfig.revenuesSheetId}}",
+        "sheetName": "Umsätze",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "approved",
+            "Bestätigt von": "={{$json.userContext.name}}",
+            "Bestätigt am": "={{$now}}"
+          }
+        },
+        "options": {
+          "locationDefine": "list",
+          "keyRow": 1,
+          "keyColumn": "ID",
+          "lookupValue": "={{$json.data.revenueId}}"
+        }
+      },
+      "id": "google-sheets-approve-revenue",
+      "name": "Google Sheets - Umsatz bestätigen",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [680, 500]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "serviceAccountEmail": "={{$json.googleSheetsConfig.serviceAccountEmail}}",
+        "operation": "update",
+        "documentId": "={{$json.googleSheetsConfig.ordersSheetId}}",
+        "sheetName": "Aufträge",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "assigned",
+            "Zugewiesen an": "={{$json.data.monteurId}}",
+            "Zugewiesen am": "={{$json.data.assignedAt}}",
+            "Zugewiesen von": "={{$json.data.assignedBy}}",
+            "Priorität": "={{$json.data.priority}}",
+            "Notizen": "={{$json.data.notes}}"
+          }
+        },
+        "options": {
+          "locationDefine": "list",
+          "keyRow": 1,
+          "keyColumn": "ID",
+          "lookupValue": "={{$json.data.orderId}}"
+        }
+      },
+      "id": "google-sheets-assign-order",
+      "name": "Google Sheets - Auftrag zuweisen",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [680, 700]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.telegramConfig.vergabeChatId}}",
+        "text": "🆕 *Neuer Auftrag erstellt*\n\n📋 *Auftrag:* #{{$json.data.id}}\n👤 *Kunde:* {{$json.data.customerName}}\n📍 *Adresse:* {{$json.data.address}}\n📞 *Telefon:* {{$json.data.phone}}\n⚡ *Priorität:* {{$json.data.priority}}\n💰 *Geschätzter Umsatz:* €{{$json.data.estimatedRevenue}}\n👨‍💼 *Erstellt von:* {{$json.data.createdBy}}\n\n_Bitte bestätigen und zuweisen._",
+        "parseMode": "Markdown",
+        "additionalFields": {}
+      },
+      "id": "telegram-notify-new-order",
+      "name": "Telegram - Neuer Auftrag Benachrichtigung",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [900, 100]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.telegramConfig.vergabeChatId}}",
+        "text": "💰 *Umsatz gemeldet*\n\n📋 *Auftrag:* #{{$json.data.orderId}}\n🔧 *Monteur:* {{$json.data.monteurName}}\n💶 *Betrag:* €{{$json.data.amount}}\n📝 *Beschreibung:* {{$json.data.description}}\n📅 *Gemeldet am:* {{$json.data.reportedAt}}\n\n_Bitte prüfen und bestätigen._",
+        "parseMode": "Markdown",
+        "additionalFields": {}
+      },
+      "id": "telegram-notify-revenue-reported",
+      "name": "Telegram - Umsatz gemeldet Benachrichtigung",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.data.monteurTelegramId}}",
+        "text": "✅ *Umsatz bestätigt*\n\n📋 *Auftrag:* #{{$json.data.orderId}}\n💶 *Betrag:* €{{$json.data.amount}}\n👨‍💼 *Bestätigt von:* {{$json.userContext.name}}\n📅 *Bestätigt am:* {{$now}}\n\n_Vielen Dank für Ihre Arbeit!_",
+        "parseMode": "Markdown",
+        "additionalFields": {}
+      },
+      "id": "telegram-notify-revenue-approved",
+      "name": "Telegram - Umsatz bestätigt Benachrichtigung",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [900, 500]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.data.monteurTelegramId}}",
+        "text": "🎯 *Neuer Auftrag zugewiesen*\n\n📋 *Auftrag:* #{{$json.data.orderId}}\n👤 *Kunde:* {{$json.data.customerName}}\n📍 *Adresse:* {{$json.data.address}}\n📞 *Telefon:* {{$json.data.phone}}\n⚡ *Priorität:* {{$json.data.priority}}\n📝 *Notizen:* {{$json.data.notes}}\n👨‍💼 *Zugewiesen von:* {{$json.data.assignedBy}}\n\n_Bitte bearbeiten Sie den Auftrag._",
+        "parseMode": "Markdown",
+        "additionalFields": {}
+      },
+      "id": "telegram-notify-order-assigned",
+      "name": "Telegram - Auftrag zugewiesen Benachrichtigung",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [900, 700]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Auftrag erfolgreich erstellt\", \"orderId\": $json.data.id } }}"
+      },
+      "id": "response-create-order",
+      "name": "Antwort - Auftrag erstellt",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Umsatz erfolgreich gemeldet\", \"revenueId\": $json.data.id } }}"
+      },
+      "id": "response-revenue-reported",
+      "name": "Antwort - Umsatz gemeldet",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Umsatz erfolgreich bestätigt\" } }}"
+      },
+      "id": "response-revenue-approved",
+      "name": "Antwort - Umsatz bestätigt",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Auftrag erfolgreich zugewiesen\" } }}"
+      },
+      "id": "response-order-assigned",
+      "name": "Antwort - Auftrag zugewiesen",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 700]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": false, \"error\": \"Unbekannte Aktion: \" + $json.action } }}"
+      },
+      "id": "response-error",
+      "name": "Antwort - Fehler",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 1000]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Wenn Auftrag erstellen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wenn Umsatz melden",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wenn Umsatz bestätigen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wenn Auftrag zuweisen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wenn Auftrag erstellen": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Auftrag erstellen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Antwort - Fehler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wenn Umsatz melden": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Umsatz melden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wenn Umsatz bestätigen": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Umsatz bestätigen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wenn Auftrag zuweisen": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Auftrag zuweisen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Auftrag erstellen": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Neuer Auftrag Benachrichtigung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Umsatz melden": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Umsatz gemeldet Benachrichtigung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Umsatz bestätigen": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Umsatz bestätigt Benachrichtigung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Auftrag zuweisen": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Auftrag zugewiesen Benachrichtigung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Neuer Auftrag Benachrichtigung": {
+      "main": [
+        [
+          {
+            "node": "Antwort - Auftrag erstellt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Umsatz gemeldet Benachrichtigung": {
+      "main": [
+        [
+          {
+            "node": "Antwort - Umsatz gemeldet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Umsatz bestätigt Benachrichtigung": {
+      "main": [
+        [
+          {
+            "node": "Antwort - Umsatz bestätigt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Auftrag zugewiesen Benachrichtigung": {
+      "main": [
+        [
+          {
+            "node": "Antwort - Auftrag zugewiesen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": 1,
+  "tags": []
+}
