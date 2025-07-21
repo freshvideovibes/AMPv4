@@ -1,0 +1,372 @@
+:root {
+    --primary-color: #007AFF;
+    --success-color: #34C759;
+    --warning-color: #FF9500;
+    --error-color: #FF3B30;
+    
+    /* Dynamische Telegram Farben mit Fallbacks */
+    --bg-color: var(--tg-theme-bg-color, #000000);
+    --secondary-bg-color: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    --text-color: var(--tg-theme-text-color, #ffffff);
+    --hint-color: var(--tg-theme-hint-color, #8e8e93);
+    --button-color: var(--tg-theme-button-color, var(--primary-color));
+    --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+    --header-bg-color: var(--tg-theme-header-bg-color, var(--secondary-bg-color));
+    --section-bg-color: var(--tg-theme-section-bg-color, var(--secondary-bg-color));
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
+}
+
+#app-container {
+    width: 100%;
+    min-height: 100vh;
+    padding-bottom: 80px; /* Platz für Bottom Nav */
+}
+
+.screen {
+    display: none;
+    padding: 20px;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+.screen.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Login Screen --- */
+#login-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+.logo {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: var(--hint-color);
+    margin-bottom: 32px;
+}
+
+#login-form {
+    width: 100%;
+    max-width: 320px;
+}
+
+/* --- Main App --- */
+#app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: var(--header-bg-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#header-title {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+#user-profile-indicator {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    color: white;
+}
+
+#app-content {
+    padding: 0 20px 20px 20px;
+}
+
+/* --- UI Komponenten --- */
+.btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: var(--radius-md);
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-primary {
+    background-color: var(--button-color);
+    color: var(--button-text-color);
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 122, 255, 0.3);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--secondary-bg-color);
+    border: 1px solid var(--hint-color);
+    border-radius: var(--radius-md);
+    color: var(--text-color);
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Bento Grid */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.bento-item {
+    background-color: var(--section-bg-color);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    text-align: center;
+    transition: var(--transition);
+    cursor: pointer;
+}
+.bento-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+}
+.bento-item .icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+.bento-item .label {
+    font-weight: 500;
+}
+
+/* Auftragskarte */
+.order-card {
+    background-color: var(--section-bg-color);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 16px;
+    border-left: 4px solid var(--warning-color);
+    cursor: pointer;
+    transition: var(--transition);
+}
+.order-card.status-urgent { border-color: var(--error-color); }
+.order-card.status-completed { border-color: var(--success-color); }
+
+.order-card:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow);
+}
+
+.order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.order-card-title {
+    font-weight: 600;
+}
+.order-card-id {
+    font-size: 12px;
+    color: var(--hint-color);
+}
+.order-card-body {
+    font-size: 14px;
+    color: var(--hint-color);
+}
+.order-card-address {
+    margin-top: 8px;
+    font-weight: 500;
+}
+
+/* Floating Action Button (FAB) */
+#fab-container {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    z-index: 20;
+}
+
+.fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--button-color);
+    color: var(--button-text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    border: none;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: var(--transition);
+}
+.fab:hover {
+    transform: scale(1.1);
+}
+
+/* Bottom Navigation */
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--header-bg-color);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    border-top: 1px solid var(--hint-color);
+    z-index: 10;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--hint-color);
+    text-decoration: none;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: var(--radius-sm);
+}
+
+.nav-item.active {
+    color: var(--primary-color);
+}
+.nav-item .icon {
+    font-size: 22px;
+    margin-bottom: 4px;
+}
+
+
+/* Modal */
+#modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+#modal-container.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: var(--secondary-bg-color);
+    width: 100%;
+    max-height: 90vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 20px;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#modal-container.active .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+#modal-title {
+    font-size: 20px;
+    font-weight: 700;
+}
+#modal-close-btn {
+    font-size: 24px;
+    background: none;
+    border: none;
+    color: var(--hint-color);
+    cursor: pointer;
+}
+
+/* --- Helper Klassen --- */
+.hidden {
+    display: none !important;
+}
+
+#loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--hint-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
