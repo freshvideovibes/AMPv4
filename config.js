@@ -18,7 +18,7 @@ const AMP_CONFIG = {
 
     // Telegram Bot Konfiguration
     telegramConfig: {
-        botToken: 'your_bot_token_here',
+        botToken: '7389706975:AAEoDZ1IBsQmHVg17R8qMj6aCRyNW3X-1T4',
         webhookUrl: 'https://your-domain.com/webhook/telegram'
     },
 
