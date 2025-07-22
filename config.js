@@ -10,9 +10,9 @@ const AMP_CONFIG = {
 
     // Google Sheets Konfiguration
     googleSheetsConfig: {
-        ordersSheetId: '1234567890abcdef', // <-- HIER IHRE GOOGLE SHEETS ID EINTRAGEN
-        revenuesSheetId: '1234567890abcdef', // <-- HIER IHRE GOOGLE SHEETS ID EINTRAGEN
-        statisticsSheetId: '1234567890abcdef', // <-- HIER IHRE GOOGLE SHEETS ID EINTRAGEN
+        ordersSheetId: '11hLAJoIDZu6tYLkfl4rXS5ouSRBjzNxoDVIzUzVmcAs', // <-- HIER IHRE GOOGLE SHEETS ID EINTRAGEN
+        revenuesSheetId: '12b01roqHL2fEKU16P2ko_AoFtyecn9BPKLywY1w7qHA', // <-- HIER IHRE GOOGLE SHEETS ID EINTRAGEN
+        statisticsSheetId: '12N8cN70QA4EECtcQYaIeNrtkHYLPdWgE1gWZUtqxhWo', // <-- HIER IHRE GOOGLE SHEETS ID EINTRAGEN
         serviceAccountEmail: 'amp-service@your-project.iam.gserviceaccount.com'
     },
 
