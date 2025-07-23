@@ -259,6 +259,10 @@ app.use((req, res) => {
 });
 
 // Start server
+// Root-Statusseite für Railway (wichtig!)
+app.get('/', (req, res) => {
+    res.send('✅ AMP 2.0 ist live auf Railway!');
+});
 app.listen(PORT, () => {
     console.log(`🚀 AMP 2.0 Server läuft auf Port ${PORT}`);
     console.log(`📱 App URL: ${process.env.APP_URL || `http://localhost:${PORT}`}`);
