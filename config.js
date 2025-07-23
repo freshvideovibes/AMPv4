@@ -6,7 +6,7 @@ const AMP_CONFIG = {
     n8nBaseUrl: 'https://amp-backend.app.n8n.cloud', // <-- HIER IHRE N8N URL EINTRAGEN
 
     // API-Endpunkt für alle Aktionen in n8n
-    apiEndpoint: '/webhook-test/amp-api-v2',
+    apiEndpoint: '/webhook/amp-api-v2',
 
     // Google Sheets Konfiguration
     googleSheetsConfig: {
