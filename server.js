@@ -7,9 +7,20 @@ const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
+const { Server } = require('socket.io');
+const http = require('http');
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+// Railway PORT configuration - important for Railway deployment
 const PORT = process.env.PORT || 3000;
 
 // Telegram Bot Setup
@@ -37,18 +48,50 @@ const upload = multer({
 // Serve static files
 app.use(express.static('.'));
 
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+    
+    socket.on('join-room', (userId) => {
+        socket.join(`user_${userId}`);
+        console.log(`User ${userId} joined room`);
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
+});
+
 // API Routes
 app.post('/api/webhook', async (req, res) => {
     try {
         const { action, userContext, data } = req.body;
         
+        // Use the provided n8n webhook URL
+        const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'https://amp-backend.app.n8n.cloud/webhook/amp-api-v2';
+        
         // Forward request to n8n
-        const n8nResponse = await axios.post(process.env.N8N_WEBHOOK_URL, {
+        const n8nResponse = await axios.post(n8nWebhookUrl, {
             action,
             userContext,
             data,
             timestamp: new Date().toISOString()
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'AMP-Railway-App/2.0'
+            },
+            timeout: 30000 // 30 second timeout
         });
+        
+        // Emit real-time update via Socket.IO if user is connected
+        if (userContext && userContext.userId) {
+            io.to(`user_${userContext.userId}`).emit('webhook-update', {
+                action,
+                data: n8nResponse.data,
+                timestamp: new Date().toISOString()
+            });
+        }
         
         res.json(n8nResponse.data);
     } catch (error) {
@@ -84,7 +127,8 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
         const base64Image = optimizedImage.toString('base64');
         
         // Send to n8n for processing
-        const n8nResponse = await axios.post(process.env.N8N_WEBHOOK_URL, {
+        const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'https://amp-backend.app.n8n.cloud/webhook/amp-api-v2';
+        const n8nResponse = await axios.post(n8nWebhookUrl, {
             action: 'upload_image',
             data: {
                 image: base64Image,
@@ -93,6 +137,12 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
                 userId: req.body.userId,
                 orderId: req.body.orderId
             }
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'AMP-Railway-App/2.0'
+            },
+            timeout: 30000
         });
 
         res.json(n8nResponse.data);
@@ -178,9 +228,16 @@ bot.onText(/\/stats/, async (msg) => {
     
     try {
         // Get quick stats from n8n
-        const response = await axios.post(process.env.N8N_WEBHOOK_URL, {
+        const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'https://amp-backend.app.n8n.cloud/webhook/amp-api-v2';
+        const response = await axios.post(n8nWebhookUrl, {
             action: 'get_quick_stats',
             data: { userId: msg.from.id }
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'AMP-Railway-App/2.0'
+            },
+            timeout: 30000
         });
         
         if (response.data.success) {
@@ -261,13 +318,59 @@ app.use((req, res) => {
 // Start server
 // Root-Statusseite für Railway (wichtig!)
 app.get('/', (req, res) => {
-    res.send('✅ AMP 2.0 ist live auf Railway!');
+    const statusHtml = `
+    <!DOCTYPE html>
+    <html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AMP 2.0 - Railway Status</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #1a1a1a; color: #fff; }
+            .container { max-width: 800px; margin: 0 auto; text-align: center; }
+            .status { background: #2d2d2d; padding: 20px; border-radius: 10px; margin: 20px 0; }
+            .success { border-left: 5px solid #4CAF50; }
+            .info { border-left: 5px solid #2196F3; }
+            h1 { color: #4CAF50; }
+            .endpoint { background: #333; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>✅ AMP 2.0 ist live auf Railway!</h1>
+            <div class="status success">
+                <h3>Server Status: Online</h3>
+                <p>Port: ${PORT}</p>
+                <p>Node Version: ${process.version}</p>
+                <p>Uptime: ${Math.floor(process.uptime())} Sekunden</p>
+            </div>
+            <div class="status info">
+                <h3>Konfiguration</h3>
+                <p>🤖 Telegram Bot: ${process.env.TELEGRAM_BOT_TOKEN ? '✅ Konfiguriert' : '❌ Nicht konfiguriert'}</p>
+                <p>⚡ n8n URL: ${process.env.N8N_WEBHOOK_URL || 'https://amp-backend.app.n8n.cloud/webhook/amp-api-v2'}</p>
+                <p>🌐 App URL: ${process.env.APP_URL || `http://localhost:${PORT}`}</p>
+            </div>
+            <div class="status info">
+                <h3>Verfügbare Endpoints</h3>
+                <div class="endpoint">POST /api/webhook - n8n Integration</div>
+                <div class="endpoint">POST /api/upload-image - Bild Upload</div>
+                <div class="endpoint">GET /health - Health Check</div>
+                <div class="endpoint">POST /webhook/telegram - Telegram Bot</div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+    res.send(statusHtml);
 });
-app.listen(PORT, () => {
+
+// Use server.listen instead of app.listen for Socket.IO support
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 AMP 2.0 Server läuft auf Port ${PORT}`);
     console.log(`📱 App URL: ${process.env.APP_URL || `http://localhost:${PORT}`}`);
     console.log(`🤖 Telegram Bot: ${process.env.TELEGRAM_BOT_TOKEN ? 'Konfiguriert' : 'Nicht konfiguriert'}`);
-    console.log(`⚡ n8n URL: ${process.env.N8N_WEBHOOK_URL || 'Nicht konfiguriert'}`);
+    console.log(`⚡ n8n URL: ${process.env.N8N_WEBHOOK_URL || 'https://amp-backend.app.n8n.cloud/webhook/amp-api-v2'}`);
+    console.log(`🔌 Socket.IO: Aktiviert`);
 });
 
 // Graceful shutdown
